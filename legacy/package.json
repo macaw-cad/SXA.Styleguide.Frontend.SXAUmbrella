@@ -1,0 +1,31 @@
+{
+  "name": "fix-legacy-sxa-theme",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Tooling to fix a legacy SXA theme for consumption by Webpack",
+  "destinationTheme": "../Media Library/Themes/Sitecore/Styleguide/Styleguide",
+  "scripts": {
+    "fix": "npm run fix:clean && npm run fix:copyfiles && npm run fix:sass",
+    "fix:clean": "del-cli --force \"%npm_package_destinationTheme%/src/theme/sass\"",
+    "fix:copyfiles": "cd theme && copyfiles --all ./** \"../%npm_package_destinationTheme%/src/theme\"",
+    "fix:sass": "gulp --gulpfile fix-legacytheme-sass-gulpfile.js -- fix"
+  },
+  "keywords": [
+    "SXA",
+    "theme",
+    "webpack"
+  ],
+  "author": "Serge van den Oever [Macaw]",
+  "license": "MIT",
+  "devDependencies": {
+    "copyfiles": "^2.2.0",
+    "del-cli": "^3.0.0",
+    "fs": "0.0.1-security",
+    "gulp": "^4.0.2",
+    "gulp-replace": "^1.0.0",
+    "gulp-sass-bulk-import": "^1.0.1",
+    "load-json-file": "^6.2.0",
+    "path": "^0.12.7"
+  },
+  "dependencies": {}
+}

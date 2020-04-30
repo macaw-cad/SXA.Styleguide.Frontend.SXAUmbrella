@@ -1,0 +1,7 @@
+{
+    "server": "https://sxastyleguidesc.dev.local",
+    "user": { 
+        "login": "sitecore\\admin", 
+        "password": "b" 
+    }
+}
