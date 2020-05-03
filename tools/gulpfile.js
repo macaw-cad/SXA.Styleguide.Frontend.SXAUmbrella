@@ -16,8 +16,12 @@ const siteAndUserConfig = JSON.parse(fs.readFileSync(path.join(global.rootPath, 
 const gulpConfig = require('../config/gulp.config.js');
 
 const mediaLibraryFilesGlob = gulpConfig.mediaLibraryFilesGlob;
-const renderingVariantsGlob = [ '../Rendering Variants/**/-/scriban/**/*.scriban' ];
-const filesGlob = [...mediaLibraryFilesGlob, ...renderingVariantsGlob];
+const renderingVariantsGlob = [ 
+  '../Rendering Variants/**/-/scriban/metadata.json', 
+  '../Rendering Variants/**/-/scriban/**/*.scriban' 
+];
+const fullDeployGlob = [...mediaLibraryFilesGlob, '../Rendering Variants/**/-/scriban/metadata.json']; // Scriban files imported per directory
+const watchGlob = [...mediaLibraryFilesGlob, ...renderingVariantsGlob];
 
 const context = {
   server: siteAndUserConfig.server,
@@ -29,7 +33,7 @@ const context = {
 const fullDeploy = async (done) => {
   let fileList = [];
   gulp
-    .src(filesGlob, {
+    .src(fullDeployGlob, {
       strict: true,
       silent: false
     })
@@ -39,7 +43,6 @@ const fullDeploy = async (done) => {
   }))
   .pipe(gulp.dest('./temp/'))
   .on ('end', function () {
-      console.log(fileList);
       fileList.forEach(filePath => {
         if (fs.lstatSync(filePath).isFile()) {
             if (context.verbose) {
@@ -53,11 +56,11 @@ const fullDeploy = async (done) => {
 }
 
 const watch = () => {
-  gulp.watch([...mediaLibraryFilesGlob, ...renderingVariantsGlob], {
+  gulp.watch(watchGlob, {
     delay: 500,
   }).on('all', (fileEvent, filePath) => {
     if (context.verbose) {
-      console.log(`Changed file [${fileEvent}] '${filePath.replace(global.rootPath + '\\', '')}'`);
+      console.log(`Changed file [${fileEvent}] '${path.resolve(__dirname, filePath).replace(global.rootPath + '\\', '')}'`);
     }
     fileActionResolver(fileEvent, filePath, context);
   });
