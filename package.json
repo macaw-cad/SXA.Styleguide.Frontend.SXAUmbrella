@@ -109,5 +109,8 @@
       "browser": true,
       "node": true
     }
+  },
+  "dependencies": {
+    "bottleneck": "^2.19.5"
   }
 }
