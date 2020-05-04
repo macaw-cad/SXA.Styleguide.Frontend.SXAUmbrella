@@ -12,7 +12,7 @@ const fileActionResolver = require('./util/fileActionResolver');
 // We are in the tools subfolder, set rootPath to root where package.json lives
 global.rootPath = path.resolve(path.join(__dirname, '..'));
 
-const siteAndUserConfig = JSON.parse(fs.readFileSync(path.join(global.rootPath, 'config/config.json')));
+const serverAndUserConfig = JSON.parse(fs.readFileSync(path.join(global.rootPath, 'config/config.json')));
 
 const gulpConfig = require('../config/gulp.config.js');
 
@@ -38,8 +38,8 @@ const copyToDistGlob = [
 ];
 
 const context = {
-  server: siteAndUserConfig.server,
-  user: { ...siteAndUserConfig.user },
+  server: serverAndUserConfig.server,
+  user: { ...serverAndUserConfig.user },
   limiter: new Bottleneck(gulpConfig.bottleneckConfig),
   verbose: gulpConfig.verbose
 }
@@ -71,10 +71,12 @@ const fullDeploy = async done => {
         }
       });
   });
+  console.log(`Full deployment on server ${serverAndUserConfig.server}`.yellow);
   done();
 }
 
 const watch = () => {
+  console.log(`Preparing watch mode for server ${serverAndUserConfig.server}`.yellow);
   gulp.watch(watchGlob, {
     delay: 500,
   }).on('all', (fileEvent, filePath) => {
@@ -89,6 +91,7 @@ const copyToDist = (done) => {
   gulp
     .src(copyToDistGlob)
     .pipe(gulp.dest('../dist'));
+  done();
 }
 
 // Exported Gulp tasks

@@ -19,28 +19,29 @@ console.log(`- Destination theme folder: ${destinationTheme}`);
 // initially handled by gulp-sass-bulk-import but does not work over multiple levels.
 // Fix location of "base/.." and "abstracts/.." folders - must be relative due to new build approach using webpack
 const fix = (done) => {
-    const absoluteRootPath = path.resolve('./theme/sass/').replace(/\\/g,'/');
-    // console.log(`absoluteRootPath: ${absoluteRootPath}`);
-    gulp
-      .src('./theme/sass/*.scss')
-      .pipe(bulkSass())
-      // make @import path relative to sass folder
-      .pipe(gulpReplace(absoluteRootPath, '.'))
-      .pipe(gulp.dest(path.resolve(destinationTheme, 'src/theme/sass/')));
-  
-    // fix "base/.. includes on deeper levels"
-    gulp
-      .src('./theme/sass/*/*.scss')
-      .pipe(gulpReplace('"base/', '"../base/'))
-      .pipe(gulpReplace('"abstracts/', '"../abstracts/'))
-      .pipe(gulp.dest(path.resolve(destinationTheme, 'src/theme/sass/')));
-    
-     gulp
-      .src('./theme/sass/*/*/*.scss')
-      .pipe(gulpReplace('"base/', '"../../base/'))
-      .pipe(gulpReplace('"abstracts/', '"../../abstracts/'))
-      .pipe(gulp.dest(path.resolve(destinationTheme, 'src/theme/sass/')));
-    done();
-  }
+  const srcThemeSass = path.resolve('./theme/sass/').replace(/\\/g, '/');
+  const destinationThemeSass = path.resolve(destinationTheme, 'src/theme/sass/');
+  gulp
+    .src(path.join(srcThemeSass, '*.scss'))
+    .pipe(bulkSass())
+    // make @import path relative to sass folder
+    .pipe(gulpReplace(srcThemeSass, '.'))
+    .pipe(gulp.dest(destinationThemeSass));
 
-  exports.fix = fix;
+  // fix "base/.. includes on deeper levels"
+  gulp
+    .src(path.join(srcThemeSass, '*/*.scss'))
+    .pipe(gulpReplace('"base/', '"../base/'))
+    .pipe(gulpReplace('"abstracts/', '"../abstracts/'))
+    .pipe(gulp.dest(destinationThemeSass));
+
+  gulp
+    .src(path.join(srcThemeSass, '*/*/*.scss'))
+    .pipe(gulpReplace('"base/', '"../../base/'))
+    .pipe(gulpReplace('"abstracts/', '"../../abstracts/'))
+    .pipe(gulp.dest(destinationThemeSass));
+    
+  done();
+}
+
+exports.fix = fix;
