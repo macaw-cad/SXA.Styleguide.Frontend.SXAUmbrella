@@ -5,9 +5,8 @@
   "description": "Tooling to fix a legacy SXA theme for consumption by Webpack",
   "destinationTheme": "../Media Library/Themes/Sitecore/Styleguide/Styleguide",
   "scripts": {
-    "fix": "npm run fix:clean && npm run fix:copyfiles && npm run fix:sass",
+    "fix": "npm run fix:clean && npm run fix:sass",
     "fix:clean": "del-cli --force \"%npm_package_destinationTheme%/src/theme/sass\"",
-    "fix:copyfiles": "cd theme && copyfiles --all ./** \"../%npm_package_destinationTheme%/src/theme\"",
     "fix:sass": "gulp --gulpfile fix-legacytheme-sass-gulpfile.js -- fix"
   },
   "keywords": [
@@ -27,5 +26,7 @@
     "load-json-file": "^6.2.0",
     "path": "^0.12.7"
   },
-  "dependencies": {}
+  "dependencies": {
+    "gulp-debug": "^4.0.0"
+  }
 }

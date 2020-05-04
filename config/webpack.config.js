@@ -16,7 +16,7 @@ const customEntryOutputConfigurations = {
 
 	theme_Styleguide: {
 		entry: {
-			'pre-optimized-min': [ '../Media Library/Themes/Sitecore/Styleguide/Styleguide/src/index.ts' ]
+			'pre-optimized-min': ['../Media Library/Themes/Sitecore/Styleguide/Styleguide/src/index.ts']
 		},
 		output: {
 			path: path.resolve(__dirname, '../Media Library/Themes/Sitecore/Styleguide/Styleguide'),
@@ -118,7 +118,7 @@ function getSassLoaders(isProd, entryOutputName) {
 		loader: "css-loader",
 		options: {
 			url: false,
-			sourceMap: isProd? false : true
+			sourceMap: isProd ? false : true
 		}
 	});
 
@@ -138,7 +138,7 @@ function getSassLoaders(isProd, entryOutputName) {
 	sassLoaders.push({
 		loader: "sass-loader",
 		options: {
-			sourceMap: isProd? false : true
+			sourceMap: isProd ? false : true
 		}
 	});
 
@@ -152,17 +152,25 @@ function getConfig(isProd, entryOutputName) {
 		module: {
 			rules: [
 				{
+					test: /\.js$/, 
+					exclude: /node_modules/, 
+					use: {
+						loader: "babel-loader",
+						options: {
+							presets: ["@babel/preset-env"]
+						}
+					}
+				},
+				{
 					test: /\.(ts|tsx)$/,
 					exclude: /node_modules/,
-					use: [
-						{ 
-							loader: 'ts-loader',
-							options: {
-								// This is to always use the same tsconfig, otherwise the tsconfig from CRA will be picked up
-								configFile: 'customTsConfig.json'
-							}
+					use: [{
+						loader: 'ts-loader',
+						options: {
+							// This is to always use the same tsconfig, otherwise the tsconfig from CRA will be picked up
+							configFile: 'customTsConfig.json'
 						}
-					]
+					}]
 				},
 				{
 					test: /\.s?css$/,
@@ -171,7 +179,9 @@ function getConfig(isProd, entryOutputName) {
 				{
 					test: /\.json$/,
 					exclude: /node_modules/,
-					use: [{ loader: 'json-loader' }]
+					use: [{
+						loader: 'json-loader'
+					}]
 				}
 			]
 		},
@@ -189,18 +199,21 @@ function getConfig(isProd, entryOutputName) {
 
 module.exports = env => {
 	if (env.NODE_ENV !== 'development' && env.NODE_ENV !== 'production') {
-        throw new Error(`NODE_ENV must we either 'development' or 'production', but got '${env.NODE_ENV}'.`);
+		throw new Error(`NODE_ENV must we either 'development' or 'production', but got '${env.NODE_ENV}'.`);
 	}
 	console.log(`Current directory (__dirname): ${__dirname}`);
 	console.log(`Webpack build for ${env.NODE_ENV}:`);
-	
+
 	var isProd = (env.NODE_ENV === 'production');
 
 
 	let configurations = [];
 	for (let [entryOutName, entryOutputConfig] of Object.entries(customEntryOutputConfigurations)) {
 		console.log(`- Processing webpack configuration for ${entryOutName}`);
-		configurations.push({ ...getConfig(isProd, entryOutName), ...entryOutputConfig });
+		configurations.push({
+			...getConfig(isProd, entryOutName),
+			...entryOutputConfig
+		});
 	}
 
 	return configurations;
