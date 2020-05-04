@@ -2,6 +2,7 @@
 
 const fs = require('fs');
 const path = require('path');
+const del = require('del');
 const through = require('through2');
 const gulp = require('gulp');
 const Bottleneck = require('Bottleneck');
@@ -15,13 +16,26 @@ const siteAndUserConfig = JSON.parse(fs.readFileSync(path.join(global.rootPath, 
 
 const gulpConfig = require('../config/gulp.config.js');
 
-const mediaLibraryFilesGlob = gulpConfig.mediaLibraryFilesGlob;
-const renderingVariantsGlob = [ 
-  '../Rendering Variants/**/-/scriban/metadata.json', 
-  '../Rendering Variants/**/-/scriban/**/*.scriban' 
+const cleanGlob = [
+  ...gulpConfig.mediaLibraryCleanGlob,
 ];
-const fullDeployGlob = [...mediaLibraryFilesGlob, '../Rendering Variants/**/-/scriban/metadata.json']; // Scriban files imported per directory
-const watchGlob = [...mediaLibraryFilesGlob, ...renderingVariantsGlob];
+
+const fullDeployGlob = [
+  ...gulpConfig.mediaLibraryUploadAndDistributionGlob,
+  ...gulpConfig.mediaLibraryUploadOnlyGlob,
+  '../Rendering Variants/**/-/scriban/metadata.json', // Scriban files imported per directory - specifying metadata.json is enough
+];
+
+const watchGlob = [
+  ...gulpConfig.mediaLibraryUploadAndDistributionGlob,
+  ...gulpConfig.mediaLibraryUploadOnlyGlob,
+  '../Rendering Variants/**/-/scriban/metadata.json', 
+  '../Rendering Variants/**/-/scriban/**/*.scriban',
+];
+
+const copyToDistGlob = [
+  ...gulpConfig.mediaLibraryUploadAndDistributionGlob,
+];
 
 const context = {
   server: siteAndUserConfig.server,
@@ -30,7 +44,12 @@ const context = {
   verbose: gulpConfig.verbose
 }
 
-const fullDeploy = async (done) => {
+const clean = done => {
+  del.sync(cleanGlob, { force: true });
+  done();
+}
+
+const fullDeploy = async done => {
   let fileList = [];
   gulp
     .src(fullDeployGlob, {
@@ -66,6 +85,14 @@ const watch = () => {
   });
 }
 
+const copyToDist = (done) => {
+  gulp
+    .src(copyToDistGlob)
+    .pipe(gulp.dest('../dist'));
+}
+
 // Exported Gulp tasks
+exports.clean = clean;
 exports.fullDeploy = fullDeploy;
 exports.watch = watch;
+exports.copyToDist = copyToDist;

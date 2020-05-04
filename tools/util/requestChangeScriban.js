@@ -1,6 +1,7 @@
 const fs = require('fs');
 const path = require('path');
-const request = require('request');
+const got = require('got');
+const FormData = require('form-data');
 require('colors');
 
 const updateScribanPath = '/-/script/v2/master/ChangeScriban';
@@ -29,7 +30,7 @@ const getPayload = renderingVariantsRootPath => {
     getScribanFiles(renderingVariantsRootPath).forEach((scribanFile) => {
         var content = fs.readFileSync(scribanFile, 'utf8');
         if (content.replace(/\s/g, '').length < 1) {
-            throw new Error(`Scriban import for '${filePath}' failed because file is empty`);
+            throw new Error({ message: `'${filePath}' is empty` });
         }
         var b = Buffer.from(content, 'utf-8');
         var obj = {
@@ -41,35 +42,23 @@ const getPayload = renderingVariantsRootPath => {
     return streams;
 }
 
-module.exports = (renderingVariantsRootPath, filePath, context) => {
+module.exports = async (renderingVariantsRootPath, filePath, context) => {
+    const relativeRenderingVariantsRootPath = path.relative(global.rootPath, renderingVariantsRootPath).replace(/\\/g,'/');
     try {
-        const relativeRenderingVariantsRootPath = path.relative(global.rootPath, renderingVariantsRootPath).replace(/\\/g,'/');
         if (!relativeRenderingVariantsRootPath.endsWith('/-/scriban')) {
-            throw new Error(`Scriban import for '${filePath}' failed because 'metadata.json', rendering variants and .scriban files MUST be in a folder '.../-/scriban'`);
+            throw new Error({ message: `'metadata.json', rendering variants and .scriban files MUST be in a folder '.../-/scriban'` });
         }
         const url = `${context.server}${updateScribanPath}?user=${context.user.login}&password=${context.user.password}&path=${filePath}`;
-        var formData = {
-            streams: JSON.stringify(getPayload(renderingVariantsRootPath)),
-            metadata: JSON.stringify(JSON.parse(fs.readFileSync(path.resolve(renderingVariantsRootPath, 'metadata.json'))))
-        };
+        const form = new FormData();
+        form.append('streams', JSON.stringify(getPayload(renderingVariantsRootPath)));
+        form.append('metadata', JSON.stringify(JSON.parse(fs.readFileSync(path.resolve(renderingVariantsRootPath, 'metadata.json')))));
 
-        request.post({
-            url: url,
-            formData: formData,
-            agentOptions: {
-                rejectUnauthorized: false
-            }
-        }, (err, httpResponse, body) => {
-            if (err) {
-                throw new Error(`Scriban import failed for Scriban files in the folder '${relativeRenderingVariantsRootPath}': ${err}`);
-            } else if (httpResponse.statusCode !== 200) {
-                throw new Error(`Scriban import failed for Scriban files in the folder '${relativeRenderingVariantsRootPath}'` +
-                                `Status code: ${httpResponse.statusCode}, status message: ${httpResponse.statusMessage}`);
-            } else {
-                console.log(`Scriban import was successful for Scriban files in the folder '${relativeRenderingVariantsRootPath}'!`.green);
-            }
-        });
-    } catch(err) {
-        console.log(`Error: ${err}`.red);
+        await got.post(url, { rejectUnauthorized: false, body: form });
+        console.log(`Scriban import was successful for Scriban files in the folder '${relativeRenderingVariantsRootPath}'!`.green);
+    } catch(error) {
+        console.log(`Scriban import failed for Scriban files in the folder '${relativeRenderingVariantsRootPath}': ${error.message}`.red);
+        if (error.response) {
+            console.log(`Status code: ${error.response.statusCode}, status message: ${error.response.statusMessage}`.red);
+        }
     }
 }
