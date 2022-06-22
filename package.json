@@ -60,7 +60,7 @@
     "del-cli": "^3.0.0",
     "form-data": "^3.0.0",
     "formstream": "^1.1.0",
-    "got": "^11.1.0",
+    "got": "^11.8.5",
     "graceful-fs": "4.2.2",
     "gulp": "^4.0.2",
     "gulp-replace": "^1.0.0",
